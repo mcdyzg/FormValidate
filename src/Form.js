@@ -1,0 +1,129 @@
+function l(data){
+	console.log(data)
+}
+
+var Form = React.createClass({
+
+	getDefaultProps:function(){
+		return {
+			type:'right',
+			className:'',
+			name:'form',
+			regs:{
+				required:'.+',  
+				number:'^\\d*$',
+				phone:'^\\d{11}$',
+				id:'^(^\\d{18}$|^\\d{17}(\\d|X|x))$'
+			}
+		}
+	},
+
+	getInitialState:function(){
+		return {
+		}
+	},
+
+	componentWillMount:function(){
+		this._inputs = {};
+	},
+
+	_renderChildren:function(children) {
+		var t = this;
+
+		if(typeof children !== 'object' || children === null) {
+			return children
+		}
+		var childrenCount = React.Children.count(children);
+		if(childrenCount >1 ) {
+			return React.Children.map(children, function(child) {
+
+				return this._renderChild(child);
+			}.bind(this))
+		} else if(childrenCount === 1) {
+			return this._renderChild(Array.isArray(children) ? children[0] : children);
+		}
+	},
+
+	_renderChild:function(child){
+		var t = this;
+		var cp = child.props;
+		// 验证通过flag
+		this.allRight = true;
+		// 错误信息汇总
+		this.errorList = {};
+
+		if(typeof child !== 'object' || child === null) {
+			return child;
+		}
+		if(child.type.displayName === 'Input') {
+			
+			this._inputs[cp.name] ={
+				node:child,
+				validate:cp.validate
+				// 'defaultValidate':cp.defaultValidate
+			}
+
+			if(cp.validateEvent && cp.validate) {
+				var eventName = cp.validateEvent;
+				var origCallback = cp[eventName];
+				var newProps = {};
+				newProps[eventName] = function(e){
+					this._inputValidate(cp.name, child);
+					return origCallback && origCallback(e)
+				}.bind(this)
+				return React.cloneElement(child, newProps);
+			}
+			
+		}
+
+		return child;
+	},
+
+	_inputValidate:function(name, child){
+		var vali = this._inputs[name].validate
+		for(var i in vali) {
+			var reg = new RegExp(this.props.regs[vali[i]]);
+			if(document[this.props.name][name] && !reg.test(document[this.props.name][name].value)) {
+				child.props.errorMsg && child.props.onError && child.props.onError(child.props.errorMsg[vali[i]]);
+				// 设置出错flag
+				this.allRight = false;
+				this.errorList[name] = child.props.errorMsg[vali[i]];
+				break;
+			}
+			child.props.onRight()
+		}
+
+		// var reg = new RegExp(this.)
+		// console.log(document[this.props.name][name].onChange)
+	},
+
+	validateAll:function(e){
+		this.allRight = true;
+		e.preventDefault()
+		// console.log(this._inputs)
+		for(var i in this._inputs) {
+			var child = this._inputs[i].node;
+			var cp = this._inputs[i].node.props;
+			if(cp.validateEvent && cp.validate) {
+				this._inputValidate(i, child);
+			}
+		}
+		if(this.allRight) {
+			this.props.onValidSubmit();
+		} else {
+			this.props.onInValidSubmit(this.errorList);
+		}
+	},
+
+	render:function(){
+		var t = this;
+		return (
+			<form {...this.props}
+				onSubmit={t.validateAll} >
+				{this._renderChildren(this.props.children)}
+			</form>
+		)
+	}
+})
+
+module.exports = Form
