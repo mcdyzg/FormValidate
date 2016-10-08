@@ -44,6 +44,16 @@ var Form = React.createClass({
 		}
 	},
 
+	extend:function(){
+		var tem = {};
+    	for (var x in arguments) {
+    		for (var y in arguments[x]) {
+    			tem[y] = arguments[x][y];
+    		}
+    	}
+    	return tem;
+	},
+
 	_renderChild:function(child){
 		var t = this;
 		var cp = child.props;
@@ -51,12 +61,14 @@ var Form = React.createClass({
 		this.allRight = true;
 		// 错误信息汇总
 		this.errorList = {};
+		// 正则汇总
+		this.regs = this.props.extendRule ? this.extend(this.props.regs, this.props.extendRule) : this.props.regs;
 
 		if(typeof child !== 'object' || child === null) {
 			return child;
 		}
 		if(child.type.displayName === 'Input') {
-			
+
 			this._inputs[cp.name] ={
 				node:child,
 				validate:cp.validate
@@ -82,7 +94,7 @@ var Form = React.createClass({
 	_inputValidate:function(name, child){
 		var vali = this._inputs[name].validate
 		for(var i in vali) {
-			var reg = new RegExp(this.props.regs[vali[i]]);
+			var reg = new RegExp(this.regs[vali[i]]);
 			if(document[this.props.name][name] && !reg.test(document[this.props.name][name].value)) {
 				child.props.errorMsg && child.props.onError && child.props.onError(child.props.errorMsg[vali[i]]);
 				// 设置出错flag

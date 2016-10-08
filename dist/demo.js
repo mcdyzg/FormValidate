@@ -95,11 +95,12 @@
 	                    name: "form1", 
 	                    onValidSubmit: t.allRight, 
 	                    onInValidSubmit: t.hasError, 
+	                    extendRule: {email:'\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*'}, 
 	                    className: "ddd"}, 
 	                    React.createElement(Input, {
 	                        validateEvent: "onChange", 
-	                        validate: ['required','phone'], 
-	                        errorMsg: {required:'必须要输入',phone:'请输入电话号码'}, 
+	                        validate: ['required','email'], 
+	                        errorMsg: {required:'必须要输入',phone:'请输入电话号码',email:'请输入正确的邮箱'}, 
 	                        onRight: t.handleRight.bind(this,'error1'), 
 	                        onError: t.handleError.bind(this,'error1'), 
 	                        onChange: t.changeValue.bind(this,'input1'), 
@@ -206,6 +207,16 @@
 			}
 		},
 
+		extend:function(){
+			var tem = {};
+	    	for (var x in arguments) {
+	    		for (var y in arguments[x]) {
+	    			tem[y] = arguments[x][y];
+	    		}
+	    	}
+	    	return tem;
+		},
+
 		_renderChild:function(child){
 			var t = this;
 			var cp = child.props;
@@ -213,12 +224,14 @@
 			this.allRight = true;
 			// 错误信息汇总
 			this.errorList = {};
+			// 正则汇总
+			this.regs = this.props.extendRule ? this.extend(this.props.regs, this.props.extendRule) : this.props.regs;
 
 			if(typeof child !== 'object' || child === null) {
 				return child;
 			}
 			if(child.type.displayName === 'Input') {
-				
+
 				this._inputs[cp.name] ={
 					node:child,
 					validate:cp.validate
@@ -244,7 +257,7 @@
 		_inputValidate:function(name, child){
 			var vali = this._inputs[name].validate
 			for(var i in vali) {
-				var reg = new RegExp(this.props.regs[vali[i]]);
+				var reg = new RegExp(this.regs[vali[i]]);
 				if(document[this.props.name][name] && !reg.test(document[this.props.name][name].value)) {
 					child.props.errorMsg && child.props.onError && child.props.onError(child.props.errorMsg[vali[i]]);
 					// 设置出错flag

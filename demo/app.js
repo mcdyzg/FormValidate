@@ -49,11 +49,12 @@ var App = React.createClass({
                     name='form1'
                     onValidSubmit={t.allRight}
                     onInValidSubmit={t.hasError}
+                    extendRule={{email:'\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*'}}
                     className='ddd'>
                     <Input 
                         validateEvent='onChange'
-                        validate={['required','phone']} 
-                        errorMsg={{required:'必须要输入',phone:'请输入电话号码'}} 
+                        validate={['required','email']} 
+                        errorMsg={{required:'必须要输入',phone:'请输入电话号码',email:'请输入正确的邮箱'}} 
                         onRight={t.handleRight.bind(this,'error1')}
                         onError={t.handleError.bind(this,'error1')}
                         onChange={t.changeValue.bind(this,'input1')}
