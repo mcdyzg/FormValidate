@@ -46,8 +46,8 @@
 
 	
 
-	var Form = __webpack_require__(1);
-	var Input = __webpack_require__(2);
+	var Form = __webpack_require__(1).Form;
+	var Input = __webpack_require__(1).Input;
 
 	var App = React.createClass({displayName: "App",
 
@@ -87,21 +87,38 @@
 	        console.log(errorList)
 	    },
 
+	    formSubmit:function(){
+	        alert('表单提交了')
+	    },
+
 	    render: function() {
 	        var t = this;
 	        return (
 	            React.createElement("div", null, 
 	                React.createElement(Form, {
+	                    // 点击提交按钮会会执行Form内所有Input的校验，并且执行onSubmit的方法，但是不会真正提交表单，因为内部event.preventDefault()了；
+	                    onSubmit: t.formSubmit, 
+	                    // name属性必须赋值，默认form
 	                    name: "form1", 
+	                    // 所有Input项都通过验证执行的回调
 	                    onValidSubmit: t.allRight, 
+	                    // 当有Input验证不通过时执行的回调，传入一个errorList参数
 	                    onInValidSubmit: t.hasError, 
+	                    // 扩展验证规则，单\必须使用\\替换才会生效
 	                    extendRule: {email:'\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*'}, 
 	                    className: "ddd"}, 
 	                    React.createElement(Input, {
+	                        // 实时校验，默认为true
+	                        immediateValidate: false, 
+	                        // 触发验证的事件，默认onChange，也支持onBlur,onClick等
 	                        validateEvent: "onChange", 
+	                        // 验证规则
 	                        validate: ['required','email'], 
+	                        // 错误信息，要与验证规则一一对应
 	                        errorMsg: {required:'必须要输入',phone:'请输入电话号码',email:'请输入正确的邮箱'}, 
+	                        // 验证通过执行的回调
 	                        onRight: t.handleRight.bind(this,'error1'), 
+	                        // 验证失败执行的回调
 	                        onError: t.handleError.bind(this,'error1'), 
 	                        onChange: t.changeValue.bind(this,'input1'), 
 	                        value: t.state.input1, 
@@ -159,6 +176,18 @@
 
 /***/ },
 /* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Form = __webpack_require__(2);
+	var Input = __webpack_require__(3);
+
+	module.exports = {
+		Form : Form,
+		Input : Input
+	}
+
+/***/ },
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	function l(data){
@@ -243,7 +272,9 @@
 					var origCallback = cp[eventName];
 					var newProps = {};
 					newProps[eventName] = function(e){
-						this._inputValidate(cp.name, child);
+						if(cp.immediateValidate) {
+							this._inputValidate(cp.name, child);
+						}
 						return origCallback && origCallback(e)
 					}.bind(this)
 					return React.cloneElement(child, newProps);
@@ -273,6 +304,7 @@
 		},
 
 		validateAll:function(e){
+			this.props.onSubmit();
 			this.allRight = true;
 			e.preventDefault()
 			// console.log(this._inputs)
@@ -304,7 +336,7 @@
 	module.exports = Form
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -312,8 +344,10 @@
 
 		getDefaultProps:function(){
 			return {
-				validateEvent:'onChange'
-				// ,defaultValidate:true
+				// 触发验证的事件，默认onChange
+				validateEvent:'onChange',
+				// 实时校验，默认为true
+				immediateValidate:true
 			}
 		},
 

@@ -3,8 +3,10 @@ var Input = React.createClass({
 
 	getDefaultProps:function(){
 		return {
-			validateEvent:'onChange'
-			// ,defaultValidate:true
+			// 触发验证的事件，默认onChange
+			validateEvent:'onChange',
+			// 实时校验，默认为true
+			immediateValidate:true
 		}
 	},
 

@@ -1,1 +1,1 @@
-module.exports = require('./src/Anim');
+module.exports = require('./src');

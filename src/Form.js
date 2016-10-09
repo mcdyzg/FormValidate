@@ -80,7 +80,9 @@ var Form = React.createClass({
 				var origCallback = cp[eventName];
 				var newProps = {};
 				newProps[eventName] = function(e){
-					this._inputValidate(cp.name, child);
+					if(cp.immediateValidate) {
+						this._inputValidate(cp.name, child);
+					}
 					return origCallback && origCallback(e)
 				}.bind(this)
 				return React.cloneElement(child, newProps);
@@ -110,6 +112,7 @@ var Form = React.createClass({
 	},
 
 	validateAll:function(e){
+		this.props.onSubmit();
 		this.allRight = true;
 		e.preventDefault()
 		// console.log(this._inputs)
