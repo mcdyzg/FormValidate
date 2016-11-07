@@ -91,6 +91,10 @@
 	        alert('表单提交了')
 	    },
 
+	    clcik:function(){
+	        console.log('按钮点击了')
+	    },
+
 	    render: function() {
 	        var t = this;
 	        return (
@@ -139,7 +143,7 @@
 	                    React.createElement("div", {className: ""}, 
 	                        this.state.error2
 	                    ), 
-	                    React.createElement("button", {type: "submit"}, "提交")
+	                    React.createElement("button", {onClick: t.clcik, type: "submit"}, "提交")
 	                )
 	            )
 	        );

@@ -45,6 +45,10 @@ var App = React.createClass({
         alert('表单提交了')
     },
 
+    clcik:function(){
+        console.log('按钮点击了')
+    },
+
     render: function() {
         var t = this;
         return (
@@ -93,7 +97,7 @@ var App = React.createClass({
                     <div className=''>
                         {this.state.error2}
                     </div>
-                    <button type='submit'>提交</button>
+                    <button onClick={t.clcik} type='submit'>提交</button>
                 </Form>
             </div>
         );
