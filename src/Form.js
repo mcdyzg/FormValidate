@@ -33,15 +33,25 @@ var Form = React.createClass({
 		if(typeof children !== 'object' || children === null) {
 			return children
 		}
-		var childrenCount = React.Children.count(children);
-		if(childrenCount >1 ) {
-			return React.Children.map(children, function(child) {
 
-				return this._renderChild(child);
-			}.bind(this))
-		} else if(childrenCount === 1) {
-			return this._renderChild(Array.isArray(children) ? children[0] : children);
-		}
+		var _child = React.cloneElement(children)
+
+		this.loop(_child)
+
+		return _child;
+	},
+
+	loop:function(c){
+		var t = this;
+		React.Children.map(c,function(item){
+			if(item.props && (Array.isArray(item.props.children) || (typeof item.props.children) === 'object')) {
+				t.loop(item.props.children)
+			}else
+			if(item.props && item.type && item.type.displayName === 'Input'){
+				t._renderChild(item)
+			}
+			
+		})
 	},
 
 	extend:function(){
@@ -79,13 +89,19 @@ var Form = React.createClass({
 				var eventName = cp.validateEvent;
 				var origCallback = cp[eventName];
 				var newProps = {};
-				newProps[eventName] = function(e){
+				// newProps[eventName] = function(e){
+				// 	if(cp.immediateValidate) {
+				// 		this._inputValidate(cp.name, child);
+				// 	}
+				// 	return origCallback && origCallback(e)
+				// }.bind(this)
+				child.props[eventName] = function(e){
 					if(cp.immediateValidate) {
 						this._inputValidate(cp.name, child);
 					}
 					return origCallback && origCallback(e)
 				}.bind(this)
-				return React.cloneElement(child, newProps);
+				// return React.cloneElement(child, newProps);
 			}
 			
 		}

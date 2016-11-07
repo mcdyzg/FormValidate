@@ -111,39 +111,47 @@
 	                    // 扩展验证规则，单\必须使用\\替换才会生效
 	                    extendRule: {email:'\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*'}, 
 	                    className: "ddd"}, 
-	                    React.createElement(Input, {
-	                        // 实时校验，默认为true
-	                        immediateValidate: false, 
-	                        // 触发验证的事件，默认onChange，也支持onBlur,onClick等
-	                        validateEvent: "onChange", 
-	                        // 验证规则
-	                        validate: ['required','email'], 
-	                        // 错误信息，要与验证规则一一对应
-	                        errorMsg: {required:'必须要输入',phone:'请输入电话号码',email:'请输入正确的邮箱'}, 
-	                        // 验证通过执行的回调
-	                        onRight: t.handleRight.bind(this,'error1'), 
-	                        // 验证失败执行的回调
-	                        onError: t.handleError.bind(this,'error1'), 
-	                        onChange: t.changeValue.bind(this,'input1'), 
-	                        value: t.state.input1, 
-	                        type: "text", 
-	                        name: "input1"}), 
 	                    React.createElement("div", {className: ""}, 
-	                        this.state.error1
-	                    ), 
-	                    React.createElement(Input, {
-	                        validate: ['required','number'], 
-	                        errorMsg: {required:'必须要输入',number:'请输入数字'}, 
-	                        onRight: t.handleRight.bind(this,'error2'), 
-	                        onError: t.handleError.bind(this,'error2'), 
-	                        onChange: t.changeValue.bind(this,'input2'), 
-	                        type: "text", 
-	                        value: t.state.input2, 
-	                        name: "input2"}), 
-	                    React.createElement("div", {className: ""}, 
-	                        this.state.error2
-	                    ), 
-	                    React.createElement("button", {onClick: t.clcik, type: "submit"}, "提交")
+	                        React.createElement("div", {className: ""}, 
+	                            React.createElement(Input, {
+	                                // 实时校验，默认为true
+	                                immediateValidate: true, 
+	                                // 触发验证的事件，默认onChange，也支持onBlur,onClick等
+	                                validateEvent: "onChange", 
+	                                // 验证规则
+	                                validate: ['required','email'], 
+	                                // 错误信息，要与验证规则一一对应
+	                                errorMsg: {required:'必须要输入',phone:'请输入电话号码',email:'请输入正确的邮箱'}, 
+	                                // 验证通过执行的回调
+	                                onRight: t.handleRight.bind(this,'error1'), 
+	                                // 验证失败执行的回调
+	                                onError: t.handleError.bind(this,'error1'), 
+	                                onChange: t.changeValue.bind(this,'input1'), 
+	                                value: t.state.input1, 
+	                                type: "text", 
+	                                name: "input1"}), 
+	                            React.createElement("div", {className: ""}, 
+	                                this.state.error1
+	                            )
+	                        ), 
+	                        
+	                        React.createElement("div", {className: ""}, 
+	                            React.createElement(Input, {
+	                                validate: ['required','number'], 
+	                                errorMsg: {required:'必须要输入',number:'请输入数字'}, 
+	                                onRight: t.handleRight.bind(this,'error2'), 
+	                                onError: t.handleError.bind(this,'error2'), 
+	                                onChange: t.changeValue.bind(this,'input2'), 
+	                                type: "text", 
+	                                value: t.state.input2, 
+	                                name: "input2"}), 
+	                            React.createElement("div", {className: ""}, 
+	                                this.state.error2
+	                            )
+	                        ), 
+
+	                        React.createElement("button", {onClick: t.clcik, type: "submit"}, "提交")
+	                    )
 	                )
 	            )
 	        );
@@ -152,31 +160,6 @@
 
 	ReactDOM.render(React.createElement(App, null), document.getElementById('AppContainer'));
 
-
-	// var Wrap = React.createClass({
-	    
-	//     render:function(){
-	//         console.log(this.props.children)
-	//         return (
-	//             <div>
-	//             1111
-	//             {this.props.children}
-	//             </div>
-	//             )
-	//     }
-	// })
-
-	// var Inner = React.createClass({
-
-	//     render:function(){
-	//         console.log('dddd')
-	//         return (
-	//             <div className=''>
-	//                 <input type='text' value='dsfd' />
-	//             </div>
-	//             )
-	//     }
-	// })
 
 /***/ },
 /* 1 */
@@ -229,15 +212,25 @@
 			if(typeof children !== 'object' || children === null) {
 				return children
 			}
-			var childrenCount = React.Children.count(children);
-			if(childrenCount >1 ) {
-				return React.Children.map(children, function(child) {
 
-					return this._renderChild(child);
-				}.bind(this))
-			} else if(childrenCount === 1) {
-				return this._renderChild(Array.isArray(children) ? children[0] : children);
-			}
+			var _child = React.cloneElement(children)
+
+			this.loop(_child)
+
+			return _child;
+		},
+
+		loop:function(c){
+			var t = this;
+			React.Children.map(c,function(item){
+				if(item.props && (Array.isArray(item.props.children) || (typeof item.props.children) === 'object')) {
+					t.loop(item.props.children)
+				}else
+				if(item.props && item.type && item.type.displayName === 'Input'){
+					t._renderChild(item)
+				}
+				
+			})
 		},
 
 		extend:function(){
@@ -275,13 +268,19 @@
 					var eventName = cp.validateEvent;
 					var origCallback = cp[eventName];
 					var newProps = {};
-					newProps[eventName] = function(e){
+					// newProps[eventName] = function(e){
+					// 	if(cp.immediateValidate) {
+					// 		this._inputValidate(cp.name, child);
+					// 	}
+					// 	return origCallback && origCallback(e)
+					// }.bind(this)
+					child.props[eventName] = function(e){
 						if(cp.immediateValidate) {
 							this._inputValidate(cp.name, child);
 						}
 						return origCallback && origCallback(e)
 					}.bind(this)
-					return React.cloneElement(child, newProps);
+					// return React.cloneElement(child, newProps);
 				}
 				
 			}
